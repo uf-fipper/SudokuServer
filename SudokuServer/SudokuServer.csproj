@@ -16,6 +16,15 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <Reference Include="Sudoku.Default">
+      <HintPath>..\lib\Sudoku.Default.dll</HintPath>
+    </Reference>
+    <Content Include="..\lib\Sudoku.Default.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
   </ItemGroup>
 
 </Project>
