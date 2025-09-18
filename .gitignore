@@ -1,0 +1,10 @@
+bin/
+obj/
+
+appsettings.json
+appsettings.*.json
+!appsettings.example.json
+
+# vscode
+.vscode/*
+!.vscode/extensions.json
