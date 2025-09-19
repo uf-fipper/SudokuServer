@@ -3,11 +3,16 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace SudokuServer.Models.DatabaseModels.Context;
 
-public interface IDbModel<T>
-    where T : class, IDbModel<T>
+public interface IDbModelBuilder
 {
-    public static void OnModelCreating(ModelBuilder modelBuilder) =>
+    static abstract void OnModelCreating(ModelBuilder modelBuilder);
+}
+
+public interface IDbModelBuilder<T> : IDbModelBuilder
+    where T : class, IDbModelBuilder<T>
+{
+    static void IDbModelBuilder.OnModelCreating(ModelBuilder modelBuilder) =>
         T.OnModelCreating(modelBuilder.Entity<T>());
 
-    public static abstract void OnModelCreating(EntityTypeBuilder<T> builder);
+    static abstract void OnModelCreating(EntityTypeBuilder<T> builder);
 }
