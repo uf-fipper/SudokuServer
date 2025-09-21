@@ -6,13 +6,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-var connectionString =
-    builder.Configuration.GetConnectionString("DatabaseConnection")
-    ?? throw new InvalidOperationException("Connection string 'DatabaseConnection' not found.");
+// var connectionString =
+//     builder.Configuration.GetConnectionString("DatabaseConnection")
+//     ?? throw new InvalidOperationException("Connection string 'DatabaseConnection' not found.");
 
-builder.Services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connectionString));
+// builder.Services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connectionString));
 
 var app = builder.Build();
+
+app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -28,5 +30,6 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllers();
 
 app.Run();
