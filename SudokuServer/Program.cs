@@ -1,16 +1,21 @@
 using Microsoft.EntityFrameworkCore;
 using SudokuServer.Models.DatabaseModels.Context;
+using SudokuServer.Services;
+using SudokuServer.ServicesImpl;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// var connectionString =
-//     builder.Configuration.GetConnectionString("DatabaseConnection")
-//     ?? throw new InvalidOperationException("Connection string 'DatabaseConnection' not found.");
+var connectionString =
+    builder.Configuration.GetConnectionString("DatabaseConnection")
+    ?? throw new InvalidOperationException("Connection string 'DatabaseConnection' not found.");
 
-// builder.Services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connectionString));
+
+// services
+builder.Services.AddScoped<ISudokuService, SudokuService>();
 
 var app = builder.Build();
 

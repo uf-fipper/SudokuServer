@@ -1,17 +1,22 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using SudokuServer.Models.DatabaseModels.Models;
 
 namespace SudokuServer.Models.DatabaseModels.Context;
 
 public class DatabaseContext : DbContext
 {
+    public DbSet<SudokuGame> SudokuGames { get; set; }
+
+    public DatabaseContext() { }
+
     public DatabaseContext(DbContextOptions<DatabaseContext> options)
         : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var assem = Assembly.GetExecutingAssembly();
-        var types = assem.GetTypes();
+        var types = assem.GetTypes().Where(t => t.IsClass && !t.IsAbstract);
         foreach (var type in types)
         {
             var modelBuilderInterface = type.GetInterfaces()

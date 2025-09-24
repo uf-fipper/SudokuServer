@@ -1,29 +1,45 @@
 using Microsoft.AspNetCore.Mvc;
 using Sudoku.Default;
+using SudokuServer.Models.Dto;
 using SudokuServer.Models.Vo;
+using SudokuServer.Services;
 
 namespace SudokuServer.Controllers;
 
 [ApiController]
 [Route("[controller]/[action]")]
-public class SudokuController : Controller
+public class SudokuController(ISudokuService sudokuService) : Controller
 {
     [HttpGet]
-    public async Task<IActionResult> CreateGame()
+    [HttpPost]
+    public async Task<IActionResult> NewGame()
     {
-        await Task.CompletedTask;
-        var gameId = Guid.NewGuid().ToString();
-        var game = await SudokuDefault.NewSudokuAsync(9, null);
-        var board = new int[9][];
-        for (int i = 0; i < 9; i++)
-        {
-            board[i] = new int[9];
-            for (int j = 0; j < 9; j++)
-            {
-                board[i][j] = game[i, j];
-            }
-        }
-        var sudokuGameVo = new SudokuGameVo { Board = board };
-        return Ok(BaseVo.Success(sudokuGameVo));
+        var game = await sudokuService.NewGameAsync();
+        var gameResult = new SudokuGamePublicVo(game);
+        return Ok(BaseVo.Success(gameResult));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetGame([FromQuery] Guid gameId)
+    {
+        var game = await sudokuService.GetGameAsync(gameId);
+        if (game == null)
+            return GameNotFound();
+        var gameResult = new SudokuGamePublicVo(game);
+        return Ok(BaseVo.Success(gameResult));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> SetValue([FromBody] SudokuSetValueDto dto)
+    {
+        var result = await sudokuService.SetValueAsync(dto);
+        if (result == null)
+            return GameNotFound();
+        return Ok(BaseVo.Success(result));
+    }
+
+    public IActionResult GameNotFound()
+    {
+        return Ok(BaseVo.Fail("404", "游戏不存在"));
     }
 }

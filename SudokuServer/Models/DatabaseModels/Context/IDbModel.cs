@@ -14,5 +14,5 @@ public interface IDbModelBuilder<T> : IDbModelBuilder
     static void IDbModelBuilder.OnModelCreating(ModelBuilder modelBuilder) =>
         T.OnModelCreating(modelBuilder.Entity<T>());
 
-    static abstract void OnModelCreating(EntityTypeBuilder<T> builder);
+    static abstract void OnModelCreating(EntityTypeBuilder<T> entity);
 }
