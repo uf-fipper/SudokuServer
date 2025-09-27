@@ -17,6 +17,9 @@ builder.Services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(c
 // services
 builder.Services.AddScoped<ISudokuService, SudokuService>();
 
+// lock
+builder.Services.AddSingleton<IDistributedLock, RedisDistributedLock>();
+
 var app = builder.Build();
 
 app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
