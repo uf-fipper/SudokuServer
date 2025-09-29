@@ -11,7 +11,7 @@ public class SudokuGamePublicVo
         IsWin = game.IsWin;
         Game = game;
         Seed = game.Seed;
-        BaseIndexs = game.Sudoku.BaseIndexs.ToList();
+        BaseIndexs = game.Sudoku.BaseIndexs.Select(x => new int[2] { x.i, x.j }).ToList();
     }
 
     public Guid GameId { get; set; }
@@ -21,7 +21,7 @@ public class SudokuGamePublicVo
     /// </summary>
     public int[][] Board { get; set; }
 
-    public List<(int, int)> BaseIndexs { get; set; }
+    public List<int[]> BaseIndexs { get; set; }
 
     public int Seed { get; set; }
 
