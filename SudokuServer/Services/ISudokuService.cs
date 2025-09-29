@@ -30,6 +30,13 @@ public interface ISudokuService
     Task<SudokuGameVo?> GetGameAsync(Guid gameId);
 
     /// <summary>
+    /// 获取游戏列表
+    /// </summary>
+    /// <param name="page"></param>
+    /// <returns></returns>
+    Task<SudokuListVo> GetGameListAsync(int page);
+
+    /// <summary>
     /// 设置游戏值
     /// </summary>
     /// <param name="dto">设置参数</param>

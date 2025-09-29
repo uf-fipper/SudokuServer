@@ -38,6 +38,13 @@ public class SudokuController(ISudokuService sudokuService) : Controller
         return Ok(BaseVo.Success(result));
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetGameList([FromQuery] int page)
+    {
+        var result = await sudokuService.GetGameListAsync(page);
+        return Ok(BaseVo.Success(result));
+    }
+
     public IActionResult GameNotFound()
     {
         return Ok(BaseVo.Fail("404", "游戏不存在"));

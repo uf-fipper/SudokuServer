@@ -73,4 +73,25 @@ public class SudokuService(DatabaseContext db) : ISudokuService
         await transaction.CommitAsync();
         return new SudokuSetValueVo(game) { IsSuccess = true };
     }
+
+    public async Task<SudokuListVo> GetGameListAsync(int page)
+    {
+        const int pageSize = 10;
+        var gameModels = await db
+            .SudokuGames.Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        var count = await db.SudokuGames.CountAsync();
+        return new SudokuListVo
+        {
+            Games = gameModels.Select(x => new SudokuGamePublicVo(new SudokuGameVo(x))).ToList(),
+            PageData = new PageDataVo
+            {
+                Page = page,
+                PageSize = pageSize,
+                Total = count,
+                TotalPage = (int)Math.Ceiling(count / (double)pageSize),
+            },
+        };
+    }
 }
