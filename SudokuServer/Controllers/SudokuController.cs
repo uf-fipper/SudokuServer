@@ -1,14 +1,16 @@
+using System.Net.WebSockets;
 using Microsoft.AspNetCore.Mvc;
-using Sudoku.Default;
+using SudokuServer.Extensions;
 using SudokuServer.Models.Dto;
 using SudokuServer.Models.Vo;
 using SudokuServer.Services;
+using SudokuServer.ServicesImpl;
 
 namespace SudokuServer.Controllers;
 
 [ApiController]
 [Route("[controller]/[action]")]
-public class SudokuController(ISudokuService sudokuService) : Controller
+public class SudokuController(ISudokuService sudokuService, GamesManager gamesManager) : Controller
 {
     [HttpGet]
     [HttpPost]
@@ -45,7 +47,30 @@ public class SudokuController(ISudokuService sudokuService) : Controller
         return Ok(BaseVo.Success(result));
     }
 
-    public IActionResult GameNotFound()
+    public async Task Connect([FromQuery] Guid gameId)
+    {
+        if (!HttpContext.WebSockets.IsWebSocketRequest)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
+        }
+        using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+        bool hasGame = await gamesManager.Connect(webSocket, gameId);
+        if (!hasGame)
+        {
+            await webSocket.CloseAsync(
+                WebSocketCloseStatus.NormalClosure,
+                "游戏不存在",
+                CancellationToken.None
+            );
+        }
+        while (webSocket.State == WebSocketState.Open)
+        {
+            await Task.Delay(10);
+        }
+    }
+
+    private OkObjectResult GameNotFound()
     {
         return Ok(BaseVo.Fail("404", "游戏不存在"));
     }
