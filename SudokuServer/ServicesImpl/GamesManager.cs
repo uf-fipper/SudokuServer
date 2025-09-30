@@ -7,13 +7,17 @@ using SudokuServer.Services;
 
 namespace SudokuServer.ServicesImpl;
 
-public class GamesManager(ISudokuService sudokuService, IDistributedLock distributedLock)
+public class GamesManager(
+    ISudokuService sudokuService,
+    IDistributedLock distributedLock,
+    IServiceProvider serviceProvider
+)
 {
     public const string GameLockKey = "Lock:WebSocketGameLock:";
 
     public static Dictionary<Guid, GameManager> Games { get; set; } = [];
 
-    public async Task<bool> Connect(WebSocket webSocket, Guid gameId)
+    public async Task<GameManager?> Connect(WebSocket webSocket, Guid gameId)
     {
         await using var _ = await distributedLock.LockAsync(
             GameLockKey + gameId.ToString("N"),
@@ -24,12 +28,13 @@ public class GamesManager(ISudokuService sudokuService, IDistributedLock distrib
         {
             var game = await sudokuService.GetGameAsync(gameId);
             if (game == null)
-                return false;
-            gameManager = new GameManager(game);
+                return null;
+            gameManager = serviceProvider.GetRequiredService<GameManager>();
+            gameManager.Game = game;
             Games[gameId] = gameManager;
         }
         gameManager.AddSocket(webSocket);
-        return true;
+        return gameManager;
     }
 
     public async Task<bool> SendAsync(Guid gameId, string text)
@@ -59,18 +64,19 @@ public class GamesManager(ISudokuService sudokuService, IDistributedLock distrib
     }
 }
 
-public class GameManager(SudokuGameVo game)
+public class GameManager(IDistributedLock distributedLock)
 {
     public Guid GameId => Game.GameId;
 
-    public SudokuGameVo Game { get; } = game;
+    public SudokuGameVo Game { get; set; } = default!;
 
     public HashSet<WebSocket> WebSockets { get; } = [];
+
+    public string LockKey => $"Lock:WebSocketGameManagerLock:{GameId}";
 
     public void AddSocket(WebSocket webSocket)
     {
         WebSockets.Add(webSocket);
-        _ = Task.Run(async () => await ReadNextAsync(webSocket));
     }
 
     public void RemoveSocket(WebSocket webSocket)
@@ -79,33 +85,22 @@ public class GameManager(SudokuGameVo game)
         webSocket.Dispose();
     }
 
-    private async Task ReadNextAsync(WebSocket webSocket)
+    public async Task ReadNextAsync(WebSocket webSocket)
     {
-        string newText;
-        try
-        {
-            newText = await webSocket.ReceiveAllTextAsync();
-        }
-        catch (WebSocketException)
-        {
-            RemoveSocket(webSocket);
-            return;
-        }
+        var newText = await webSocket.ReceiveAllTextAsync();
         await ReadOnceAsync(webSocket, newText);
     }
 
     private async Task ReadOnceAsync(WebSocket webSocket, string text)
     {
+        await using var lockObj = await LockAsync();
         if (text.IsNullOrEmpty())
         {
-            RemoveSocket(webSocket);
             return;
         }
         // todo: 解析并做处理
         // 目前只是简单地广播收到的消息
         await SendAsync(text);
-        // 等待下一次收到消息
-        _ = Task.Run(async () => await ReadNextAsync(webSocket));
     }
 
     public async Task SendAsync(string text)
@@ -135,5 +130,22 @@ public class GameManager(SudokuGameVo game)
     {
         var text = System.Text.Json.JsonSerializer.Serialize(obj);
         await SendAsync(text);
+    }
+
+    public async Task<IDistributedLockObject> LockAsync()
+    {
+        var start = DateTime.Now;
+        IDistributedLockObject obj;
+        do
+        {
+            obj = await distributedLock.LockAsync(LockKey, TimeSpan.FromSeconds(10));
+            if (obj.IsLocked)
+                return obj;
+            await Task.Delay(10);
+            if (DateTime.Now - start > TimeSpan.FromSeconds(10))
+            {
+                throw new TimeoutException("获取锁超时");
+            }
+        } while (true);
     }
 }

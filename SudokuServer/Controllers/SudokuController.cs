@@ -55,18 +55,19 @@ public class SudokuController(ISudokuService sudokuService, GamesManager gamesMa
             return;
         }
         using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-        bool hasGame = await gamesManager.Connect(webSocket, gameId);
-        if (!hasGame)
+        var gameManager = await gamesManager.Connect(webSocket, gameId);
+        if (gameManager is null)
         {
             await webSocket.CloseAsync(
                 WebSocketCloseStatus.NormalClosure,
                 "游戏不存在",
                 CancellationToken.None
             );
+            return;
         }
         while (webSocket.State == WebSocketState.Open)
         {
-            await Task.Delay(10);
+            await gameManager.ReadNextAsync(webSocket);
         }
     }
 
