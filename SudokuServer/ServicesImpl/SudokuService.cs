@@ -47,7 +47,8 @@ public class SudokuService(DatabaseContext db) : ISudokuService
         int i = dto.I;
         int j = dto.J;
         int value = dto.Value;
-        await using var transaction = await db.Database.BeginTransactionAsync();
+        // 这个事务好像没用，应该上分布式锁？
+        // await using var transaction = await db.Database.BeginTransactionAsync();
         var game = await GetGameAsync(dto.GameId);
         if (game == null)
             return null;
@@ -70,7 +71,7 @@ public class SudokuService(DatabaseContext db) : ISudokuService
             .SudokuGames.Where(x => x.Id == game.GameId)
             .ExecuteUpdateAsync(x => x.SetProperty(p => p.Board, newGame.Board));
         await db.SaveChangesAsync();
-        await transaction.CommitAsync();
+        // await transaction.CommitAsync();
         return new SudokuSetValueVo(game) { IsSuccess = true };
     }
 

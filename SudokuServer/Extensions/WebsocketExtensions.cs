@@ -1,5 +1,6 @@
 using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
 
 namespace SudokuServer.Extensions;
 
@@ -39,9 +40,13 @@ public static class WebsocketExtensions
         );
     }
 
-    public static async Task SendAsJsonAsync<T>(this WebSocket webSocket, T obj)
+    public static async Task SendAsJsonAsync<T>(
+        this WebSocket webSocket,
+        T obj,
+        JsonSerializerOptions? serializerOptions = null
+    )
     {
-        var text = System.Text.Json.JsonSerializer.Serialize(obj);
+        var text = JsonSerializer.Serialize(obj, serializerOptions);
         await webSocket.SendTextAsync(text);
     }
 }
