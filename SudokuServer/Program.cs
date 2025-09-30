@@ -20,7 +20,7 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 );
 
 // services
-builder.Services.AddScoped<ISudokuService, SudokuService>();
+builder.Services.AddScoped<SudokuService>();
 builder.Services.AddScoped<GamesManager>();
 
 // lock

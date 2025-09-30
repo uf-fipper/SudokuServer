@@ -10,7 +10,7 @@ namespace SudokuServer.Controllers;
 
 [ApiController]
 [Route("[controller]/[action]")]
-public class SudokuController(ISudokuService sudokuService, GamesManager gamesManager) : Controller
+public class SudokuController(SudokuService sudokuService, GamesManager gamesManager) : Controller
 {
     [HttpGet]
     [HttpPost]

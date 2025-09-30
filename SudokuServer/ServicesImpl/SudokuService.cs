@@ -9,11 +9,18 @@ using SudokuServer.Services;
 
 namespace SudokuServer.ServicesImpl;
 
-public class SudokuService(DatabaseContext db) : ISudokuService
+public class SudokuService(DatabaseContext db)
 {
+    public Task<SudokuGameVo> NewGameAsync() => NewGameAsync(9, null);
+
+    public Task<SudokuGameVo> NewGameAsync(int size) => NewGameAsync(size, null);
+
+    public Task<SudokuGameVo> NewGameAsync(int size, int? seed) =>
+        NewGameAsync(size, seed, SudokuGameType.Default);
+
     public async Task<SudokuGameVo> NewGameAsync(int size, int? seed, SudokuGameType type)
     {
-        await using var transaction = await db.Database.BeginTransactionAsync();
+        // await using var transaction = await db.Database.BeginTransactionAsync();
         seed ??= new Random().Next();
         ISudokuAsync sudoku = type switch
         {
@@ -28,30 +35,43 @@ public class SudokuService(DatabaseContext db) : ISudokuService
         gameModel.Seed = seed.Value;
         await db.SudokuGames.AddAsync(gameModel);
         await db.SaveChangesAsync();
-        await transaction.CommitAsync();
+        // await transaction.CommitAsync();
         game.GameId = gameModel.Id;
         return game;
     }
 
     public async Task<SudokuGameVo?> GetGameAsync(Guid gameId)
     {
-        var gameModel = await db.SudokuGames.Where(x => x.Id == gameId).FirstOrDefaultAsync();
+        var gameModel = await GetGameInternalAsync(gameId);
         if (gameModel == null)
             return null;
         var game = new SudokuGameVo(gameModel);
         return game;
     }
 
-    public async Task<SudokuSetValueVo?> SetValueAsync(SudokuSetValueDto dto)
+    public async Task<SudokuGame?> GetGameInternalAsync(Guid gameId, bool asNoTracking = false)
+    {
+        var queryable = db.SudokuGames.Where(x => x.Id == gameId);
+        if (asNoTracking)
+            queryable = queryable.AsNoTracking();
+        var gameModel = await queryable.FirstOrDefaultAsync();
+        return gameModel;
+    }
+
+    public async Task<SudokuSetValueVo?> SetValueAsync(SudokuSetValueDto dto) =>
+        await SetValueAsync(dto, false);
+
+    public async Task<SudokuSetValueVo?> SetValueAsync(SudokuSetValueDto dto, bool asNoTracking)
     {
         int i = dto.I;
         int j = dto.J;
         int value = dto.Value;
         // 这个事务好像没用，应该上分布式锁？
         // await using var transaction = await db.Database.BeginTransactionAsync();
-        var game = await GetGameAsync(dto.GameId);
-        if (game == null)
+        var gameModel = await GetGameInternalAsync(dto.GameId, asNoTracking);
+        if (gameModel == null)
             return null;
+        var game = new SudokuGameVo(gameModel);
         int size = game.Sudoku.Size;
         if (i < 0 || i >= size)
             throw new ArgumentOutOfRangeException(nameof(dto.I));
@@ -67,9 +87,16 @@ public class SudokuService(DatabaseContext db) : ISudokuService
         }
         game.Sudoku[i, j] = value;
         var newGame = game.ToSudokuGame();
-        await db
-            .SudokuGames.Where(x => x.Id == game.GameId)
-            .ExecuteUpdateAsync(x => x.SetProperty(p => p.Board, newGame.Board));
+        if (asNoTracking)
+        {
+            await db
+                .SudokuGames.Where(x => x.Id == game.GameId)
+                .ExecuteUpdateAsync(x => x.SetProperty(p => p.Board, newGame.Board));
+        }
+        else
+        {
+            gameModel.Board = newGame.Board;
+        }
         await db.SaveChangesAsync();
         // await transaction.CommitAsync();
         return new SudokuSetValueVo(game) { IsSuccess = true };

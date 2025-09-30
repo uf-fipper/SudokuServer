@@ -1,6 +1,5 @@
 using System.Net.WebSockets;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -12,7 +11,7 @@ using SudokuServer.Services;
 namespace SudokuServer.ServicesImpl;
 
 public class GamesManager(
-    ISudokuService sudokuService,
+    SudokuService sudokuService,
     IDistributedLock distributedLock,
     IOptions<JsonOptions> jsonOptions
 )
@@ -99,9 +98,12 @@ public class GamesManager(
                 );
                 return;
             }
-            var setValueResult = await sudokuService.SetValueAsync(setValueDto);
+            var setValueResult =
+                await sudokuService.SetValueAsync(setValueDto, true)
+                ?? throw new NotSupportedException("游戏已结束");
+            gameManager.Game = setValueResult.Game.Game;
             await gameManager.SendAsJsonAsync(
-                BaseVo.Success(setValueResult),
+                BaseVo.Success(SudokuWebSocketBaseVo.SetValue(setValueResult)),
                 JsonSerializerOptions
             );
         }
