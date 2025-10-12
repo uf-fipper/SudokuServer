@@ -37,6 +37,8 @@ public class SudokuController(SudokuService sudokuService, GamesManager gamesMan
         var result = await sudokuService.SetValueAsync(dto);
         if (result == null)
             return GameNotFound();
+        if (result.IsLocked)
+            return Ok(BaseVo.Fail("400", "网络繁忙，请稍后再试"));
         return Ok(BaseVo.Success(result));
     }
 

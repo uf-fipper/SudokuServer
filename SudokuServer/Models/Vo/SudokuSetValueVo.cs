@@ -1,8 +1,8 @@
 namespace SudokuServer.Models.Vo;
 
-public class SudokuSetValueVo(SudokuGameVo game)
+public class SudokuSetValueVo(SudokuGameVo? game)
 {
-    public SudokuGamePublicVo Game { get; set; } = new(game);
+    public SudokuGamePublicVo? Game { get; set; } = game is null ? null : new(game);
 
     /// <summary>
     /// 设置值是否成功
@@ -14,5 +14,10 @@ public class SudokuSetValueVo(SudokuGameVo game)
     /// </summary>
     public bool IsBase { get; set; } = false;
 
-    public bool IsWin => Game.IsWin;
+    /// <summary>
+    /// 如果失败，是否被锁定
+    /// </summary>
+    public bool IsLocked { get; set; } = false;
+
+    public bool IsWin => Game?.IsWin ?? false;
 }

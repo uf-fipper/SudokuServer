@@ -100,8 +100,16 @@ public class GamesManager(
             }
             var setValueResult =
                 await sudokuService.SetValueAsync(setValueDto, true)
-                ?? throw new NotSupportedException("游戏已结束");
-            gameManager.Game = setValueResult.Game.Game;
+                ?? throw new NotSupportedException("游戏不存在");
+            if (setValueResult.IsLocked)
+            {
+                await webSocket.SendAsJsonAsync(
+                    BaseVo.Fail("400", "网络繁忙，请稍后再试"),
+                    JsonSerializerOptions
+                );
+                return;
+            }
+            gameManager.Game = setValueResult.Game!.Game;
             await gameManager.SendAsJsonAsync(
                 BaseVo.Success(SudokuWebSocketBaseVo.SetValue(setValueResult)),
                 JsonSerializerOptions

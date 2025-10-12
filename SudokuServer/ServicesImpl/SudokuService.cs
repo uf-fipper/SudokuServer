@@ -9,7 +9,7 @@ using SudokuServer.Services;
 
 namespace SudokuServer.ServicesImpl;
 
-public class SudokuService(DatabaseContext db)
+public class SudokuService(DatabaseContext db, IDistributedLock distributedLock)
 {
     public Task<SudokuGameVo> NewGameAsync() => NewGameAsync(9, null);
 
@@ -67,11 +67,15 @@ public class SudokuService(DatabaseContext db)
 
     public async Task<SudokuSetValueVo?> SetValueAsync(SudokuSetValueDto dto, bool asNoTracking)
     {
+        // 加锁
+        await using var lockObj = await LockGameAsync(dto.GameId);
+        if (!lockObj.IsLocked)
+        {
+            return new SudokuSetValueVo(null) { IsSuccess = false, IsLocked = true };
+        }
         int i = dto.I;
         int j = dto.J;
         int value = dto.Value;
-        // 这个事务好像没用，应该上分布式锁？
-        // await using var transaction = await db.Database.BeginTransactionAsync();
         var gameModel = await GetGameInternalAsync(dto.GameId, asNoTracking);
         if (gameModel == null)
             return null;
@@ -126,5 +130,28 @@ public class SudokuService(DatabaseContext db)
                 TotalPage = (int)Math.Ceiling(count / (double)pageSize),
             },
         };
+    }
+
+    public string LockGameKey(Guid gameId) => $"lock:sudoku_game_{gameId}";
+
+    public async Task<IDistributedLockObject> LockGameAsync(
+        Guid gameId,
+        TimeSpan? timeout = null,
+        TimeSpan? waitTime = null
+    )
+    {
+        timeout ??= TimeSpan.FromSeconds(10);
+        waitTime ??= TimeSpan.FromSeconds(1);
+        string key = LockGameKey(gameId);
+        var startTime = DateTime.Now;
+        do
+        {
+            var @lock = await distributedLock.LockAsync(key, timeout.Value);
+            if (@lock.IsLocked)
+                return @lock;
+            await Task.Delay(100);
+        } while (DateTime.Now - startTime < waitTime);
+        // 最后再尝试一次
+        return await distributedLock.LockAsync(gameId.ToString(), timeout.Value);
     }
 }
