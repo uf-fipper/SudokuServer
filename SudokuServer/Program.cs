@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SudokuServer.Models.DatabaseModels.Context;
+using SudokuServer.Models.DatabaseModels.Context.OnSaveChangesActions;
 using SudokuServer.Services;
 using SudokuServer.ServicesImpl;
 
@@ -22,6 +23,7 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 // services
 builder.Services.AddScoped<SudokuService>();
 builder.Services.AddScoped<GamesManager>();
+builder.Services.AddOnSaveChangesActions();
 
 // lock
 builder.Services.AddSingleton<IDistributedLock, RedisDistributedLock>();

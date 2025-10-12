@@ -11,7 +11,6 @@ public class SudokuGameVo
         Sudoku = sudoku;
         GameId = gameId;
         Seed = seed;
-        SetIsWin();
     }
 
     public SudokuGameVo(SudokuGame game)
@@ -35,24 +34,6 @@ public class SudokuGameVo
         GameId = game.Id;
         Sudoku = sudoku;
         Seed = game.Seed;
-        SetIsWin();
-    }
-
-    private void SetIsWin()
-    {
-        int size = Sudoku.Size;
-        for (int i = 0; i < size; i++)
-        {
-            for (int j = 0; j < size; j++)
-            {
-                if (Sudoku[i, j] == 0)
-                {
-                    IsWin = false;
-                    return;
-                }
-            }
-        }
-        IsWin = true;
     }
 
     public Guid GameId { get; set; }
@@ -61,7 +42,7 @@ public class SudokuGameVo
 
     public int Seed { get; set; }
 
-    public bool IsWin { get; private set; }
+    public bool IsWin => Sudoku.IsWin();
 
     public SudokuSetValueVo? SetValueStatus { get; set; }
 

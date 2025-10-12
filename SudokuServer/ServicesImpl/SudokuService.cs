@@ -26,13 +26,17 @@ public class SudokuService(DatabaseContext db)
         {
             SudokuGameType.Default => await SudokuDefault.NewSudokuAsync(
                 size,
-                new Random(seed.Value)
+                new Random(seed.Value),
+                20
             ),
             _ => throw new NotSupportedException(),
         };
+        var winSudoku = await sudoku.SolveNewAsync();
+        var winBoard = SudokuGameVo.ToBoardString(winSudoku!.GetBoard());
         var game = new SudokuGameVo(sudoku, default, seed.Value);
         var gameModel = game.ToSudokuGame();
         gameModel.Seed = seed.Value;
+        gameModel.WinBoard = winBoard;
         await db.SudokuGames.AddAsync(gameModel);
         await db.SaveChangesAsync();
         // await transaction.CommitAsync();
@@ -99,7 +103,8 @@ public class SudokuService(DatabaseContext db)
         }
         await db.SaveChangesAsync();
         // await transaction.CommitAsync();
-        return new SudokuSetValueVo(game) { IsSuccess = true };
+        var result = new SudokuSetValueVo(game) { IsSuccess = true };
+        return result;
     }
 
     public async Task<SudokuListVo> GetGameListAsync(int page)

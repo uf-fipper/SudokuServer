@@ -8,7 +8,6 @@ public class SudokuGamePublicVo
     {
         GameId = game.GameId;
         Board = game.GetBoard();
-        IsWin = game.IsWin;
         Game = game;
         Seed = game.Seed;
         BaseIndexs = game.Sudoku.BaseIndexs.Select(x => new int[2] { x.i, x.j }).ToList();
@@ -25,7 +24,7 @@ public class SudokuGamePublicVo
 
     public int Seed { get; set; }
 
-    public bool IsWin { get; set; }
+    public bool IsWin => Game.IsWin;
 
     [JsonIgnore]
     public SudokuGameVo Game { get; set; }
