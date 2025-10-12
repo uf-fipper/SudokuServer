@@ -5,6 +5,12 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SudokuServer", "SudokuServer\SudokuServer.csproj", "{DE71E8F3-02C6-46A7-B961-32F8636A146D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SudokuNet", "SudokuNet", "{98EFC3BC-E746-A35A-0F31-A0545D4610C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Default", "SudokuNet\Sudoku.Default\Sudoku.Default.csproj", "{A01DB37C-DD4A-49AA-8835-0719A155BDD6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku", "SudokuNet\Sudoku\Sudoku.csproj", "{D42F9DBF-1D50-4986-BEDE-833942AC9B83}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,8 +33,36 @@ Global
 		{DE71E8F3-02C6-46A7-B961-32F8636A146D}.Release|x64.Build.0 = Release|Any CPU
 		{DE71E8F3-02C6-46A7-B961-32F8636A146D}.Release|x86.ActiveCfg = Release|Any CPU
 		{DE71E8F3-02C6-46A7-B961-32F8636A146D}.Release|x86.Build.0 = Release|Any CPU
+		{A01DB37C-DD4A-49AA-8835-0719A155BDD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A01DB37C-DD4A-49AA-8835-0719A155BDD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A01DB37C-DD4A-49AA-8835-0719A155BDD6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A01DB37C-DD4A-49AA-8835-0719A155BDD6}.Debug|x64.Build.0 = Debug|Any CPU
+		{A01DB37C-DD4A-49AA-8835-0719A155BDD6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A01DB37C-DD4A-49AA-8835-0719A155BDD6}.Debug|x86.Build.0 = Debug|Any CPU
+		{A01DB37C-DD4A-49AA-8835-0719A155BDD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A01DB37C-DD4A-49AA-8835-0719A155BDD6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A01DB37C-DD4A-49AA-8835-0719A155BDD6}.Release|x64.ActiveCfg = Release|Any CPU
+		{A01DB37C-DD4A-49AA-8835-0719A155BDD6}.Release|x64.Build.0 = Release|Any CPU
+		{A01DB37C-DD4A-49AA-8835-0719A155BDD6}.Release|x86.ActiveCfg = Release|Any CPU
+		{A01DB37C-DD4A-49AA-8835-0719A155BDD6}.Release|x86.Build.0 = Release|Any CPU
+		{D42F9DBF-1D50-4986-BEDE-833942AC9B83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D42F9DBF-1D50-4986-BEDE-833942AC9B83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D42F9DBF-1D50-4986-BEDE-833942AC9B83}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D42F9DBF-1D50-4986-BEDE-833942AC9B83}.Debug|x64.Build.0 = Debug|Any CPU
+		{D42F9DBF-1D50-4986-BEDE-833942AC9B83}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D42F9DBF-1D50-4986-BEDE-833942AC9B83}.Debug|x86.Build.0 = Debug|Any CPU
+		{D42F9DBF-1D50-4986-BEDE-833942AC9B83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D42F9DBF-1D50-4986-BEDE-833942AC9B83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D42F9DBF-1D50-4986-BEDE-833942AC9B83}.Release|x64.ActiveCfg = Release|Any CPU
+		{D42F9DBF-1D50-4986-BEDE-833942AC9B83}.Release|x64.Build.0 = Release|Any CPU
+		{D42F9DBF-1D50-4986-BEDE-833942AC9B83}.Release|x86.ActiveCfg = Release|Any CPU
+		{D42F9DBF-1D50-4986-BEDE-833942AC9B83}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A01DB37C-DD4A-49AA-8835-0719A155BDD6} = {98EFC3BC-E746-A35A-0F31-A0545D4610C4}
+		{D42F9DBF-1D50-4986-BEDE-833942AC9B83} = {98EFC3BC-E746-A35A-0F31-A0545D4610C4}
 	EndGlobalSection
 EndGlobal

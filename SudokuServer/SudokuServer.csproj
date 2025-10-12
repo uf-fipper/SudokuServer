@@ -17,21 +17,11 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="StackExchange.Redis" Version="2.9.17" />
-    <Reference Include="Sudoku">
-      <HintPath>..\lib\Sudoku.dll</HintPath>
-    </Reference>
-    <Content Include="..\lib\Sudoku.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Reference Include="Sudoku.Default">
-      <HintPath>..\lib\Sudoku.Default.dll</HintPath>
-    </Reference>
-    <Content Include="..\lib\Sudoku.Default.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SudokuNet\Sudoku.Default\Sudoku.Default.csproj" />
+    <ProjectReference Include="..\SudokuNet\Sudoku\Sudoku.csproj" />
   </ItemGroup>
 
 </Project>
