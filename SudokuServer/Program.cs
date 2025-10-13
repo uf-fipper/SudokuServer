@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using SudokuServer.Models.DatabaseModels.Context;
 using SudokuServer.Models.DatabaseModels.Context.OnSaveChangesActions;
@@ -11,8 +12,7 @@ builder.Services.AddControllersWithViews();
 
 // database
 var databaseConnectionString =
-    Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING")
-    ?? builder.Configuration.GetConnectionString("DatabaseConnection")
+    builder.Configuration.GetConnectionString("DatabaseConnection")
     ?? throw new InvalidOperationException(
         "Environment variable 'DATABASE_CONNECTION_STRING' not found."
     );
@@ -32,12 +32,16 @@ builder.Services.AddSingleton<IDistributedLock, RedisDistributedLock>();
 builder.Services.AddSingleton<IDistributedCacheMore, RedisDistributedCache>();
 
 // redis
+var redisSection = builder.Configuration.GetSection("Redis");
+var redisEndpoint = redisSection.GetValue<string>("Endpoint") ?? "localhost:6379";
+
+// throw new Exception(redisEndpoint);
 var redisOptions = new StackExchange.Redis.ConfigurationOptions
 {
-    EndPoints = { Environment.GetEnvironmentVariable("REDIS_HOST") ?? "localhost:6379" },
-    User = builder.Configuration.GetValue<string>("REDIS_USER"),
-    Password = builder.Configuration.GetValue<string>("REDIS_PASSWORD"),
-    DefaultDatabase = builder.Configuration.GetValue<int?>("REDIS_DATABASE") ?? 0,
+    EndPoints = { redisEndpoint },
+    User = redisSection.GetValue<string>("User"),
+    Password = redisSection.GetValue<string>("Password"),
+    DefaultDatabase = redisSection.GetValue<int?>("Database") ?? 0,
 };
 var redisConnection = StackExchange.Redis.ConnectionMultiplexer.Connect(redisOptions);
 builder.Services.AddSingleton(redisConnection.GetDatabase(0));
