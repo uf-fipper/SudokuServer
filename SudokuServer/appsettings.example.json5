@@ -9,6 +9,11 @@
   "ConnectionStrings": {
     "DatabaseConnection": "Server=localhost;Database=master;User Id=sa;Password=password;TrustServerCertificate=True"
   },
+  "Database": {
+    // 数据库类型，目前支持 SqlServer 和 MySql
+    "Type": "SqlServer",
+    "ConnectionString": "Server=localhost;Database=master;User Id=sa;Password=password;TrustServerCertificate=True"
+  },
   "Redis": {
     "EndPoint": "localhost:6379",
     "User": null,

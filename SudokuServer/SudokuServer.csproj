@@ -16,6 +16,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="MySql.EntityFrameworkCore" Version="9.0.6" />
     <PackageReference Include="StackExchange.Redis" Version="2.9.17" />
   </ItemGroup>
 

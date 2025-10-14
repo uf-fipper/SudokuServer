@@ -11,14 +11,29 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 // database
+var databaseOptions =
+    builder.Configuration.GetSection("Database")
+    ?? throw new InvalidOperationException("Database section not found.");
+var databaseType =
+    databaseOptions.GetValue<string>("Type")
+    ?? throw new InvalidOperationException("Database type not found.");
 var databaseConnectionString =
-    builder.Configuration.GetConnectionString("DatabaseConnection")
-    ?? throw new InvalidOperationException(
-        "Environment variable 'DATABASE_CONNECTION_STRING' not found."
-    );
+    databaseOptions.GetValue<string>("ConnectionString")
+    ?? throw new InvalidOperationException("Database connection string not found.");
 builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlServer(databaseConnectionString)
-);
+{
+    switch (databaseType)
+    {
+        case "SqlServer":
+            options.UseSqlServer(databaseConnectionString);
+            break;
+        case "MySql":
+            options.UseMySQL(databaseConnectionString);
+            break;
+        default:
+            throw new InvalidOperationException($"Database type {databaseType} not supported.");
+    }
+});
 
 // services
 builder.Services.AddScoped<SudokuService>();
