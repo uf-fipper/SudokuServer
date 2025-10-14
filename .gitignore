@@ -8,3 +8,7 @@ appsettings.*.json
 # vscode
 .vscode/*
 !.vscode/extensions.json
+
+# Migrations
+# 因不同数据库的差异性，因此使用手动迁移
+Migrations/
