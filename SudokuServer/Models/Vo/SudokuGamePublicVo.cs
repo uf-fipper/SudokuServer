@@ -26,6 +26,8 @@ public class SudokuGamePublicVo
 
     public bool IsWin => Game.IsWin;
 
+    public int BoardEmptyCount => Game.BoardEmptyCount;
+
     [JsonIgnore]
     public SudokuGameVo Game { get; set; }
 }

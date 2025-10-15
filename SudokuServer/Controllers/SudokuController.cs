@@ -14,9 +14,9 @@ public class SudokuController(SudokuService sudokuService, GamesManager gamesMan
 {
     [HttpGet]
     [HttpPost]
-    public async Task<IActionResult> NewGame()
+    public async Task<IActionResult> NewGame([FromBody] SudokuNewGameDto dto)
     {
-        var game = await sudokuService.NewGameAsync();
+        var game = await sudokuService.NewGameAsync(maxCount: dto.MaxCount);
         var gameResult = new SudokuGamePublicVo(game);
         return Ok(BaseVo.Success(gameResult));
     }

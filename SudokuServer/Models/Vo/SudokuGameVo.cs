@@ -11,6 +11,7 @@ public class SudokuGameVo
         Sudoku = sudoku;
         GameId = gameId;
         Seed = seed;
+        BoardEmptyCount = GetBoard().Sum(x => x.Where(y => y == 0).Count());
     }
 
     public SudokuGameVo(SudokuGame game)
@@ -34,6 +35,7 @@ public class SudokuGameVo
         GameId = game.Id;
         Sudoku = sudoku;
         Seed = game.Seed;
+        BoardEmptyCount = GetBoard().Sum(x => x.Where(y => y == 0).Count());
     }
 
     public Guid GameId { get; set; }
@@ -43,6 +45,8 @@ public class SudokuGameVo
     public int Seed { get; set; }
 
     public bool IsWin => Sudoku.IsWin();
+
+    public int BoardEmptyCount { get; set; }
 
     public SudokuSetValueVo? SetValueStatus { get; set; }
 

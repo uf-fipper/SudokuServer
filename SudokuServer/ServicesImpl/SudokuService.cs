@@ -11,14 +11,12 @@ namespace SudokuServer.ServicesImpl;
 
 public class SudokuService(DatabaseContext db, IDistributedLock distributedLock)
 {
-    public Task<SudokuGameVo> NewGameAsync() => NewGameAsync(9, null);
-
-    public Task<SudokuGameVo> NewGameAsync(int size) => NewGameAsync(size, null);
-
-    public Task<SudokuGameVo> NewGameAsync(int size, int? seed) =>
-        NewGameAsync(size, seed, SudokuGameType.Default);
-
-    public async Task<SudokuGameVo> NewGameAsync(int size, int? seed, SudokuGameType type)
+    public async Task<SudokuGameVo> NewGameAsync(
+        int size = 9,
+        int? seed = null,
+        SudokuGameType type = SudokuGameType.Default,
+        int maxCount = int.MaxValue
+    )
     {
         // await using var transaction = await db.Database.BeginTransactionAsync();
         seed ??= new Random().Next();
@@ -27,7 +25,7 @@ public class SudokuService(DatabaseContext db, IDistributedLock distributedLock)
             SudokuGameType.Default => await SudokuDefault.NewSudokuAsync(
                 size,
                 new Random(seed.Value),
-                20
+                maxCount
             ),
             _ => throw new NotSupportedException(),
         };
