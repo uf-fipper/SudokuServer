@@ -28,6 +28,8 @@ public class SudokuGamePublicVo
 
     public int BoardEmptyCount => Game.BoardEmptyCount;
 
+    public int StartBoardEmptyCount => Game.StartBoardEmptyCount;
+
     [JsonIgnore]
     public SudokuGameVo Game { get; set; }
 }
