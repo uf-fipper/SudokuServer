@@ -2,16 +2,34 @@ namespace SudokuServer.Models.Vo;
 
 public class SudokuWebSocketBaseVo
 {
-    public string Type { get; set; } = "";
+    public required string Type { get; set; }
 
-    public static SudokuWebSocketBaseVo<SudokuSetValueVo> SetValue(SudokuSetValueVo data)
+    public required int MessageSeq { get; set; }
+
+    public static SudokuWebSocketBaseVo<SudokuSetValueVo> SetValue(
+        SudokuSetValueVo data,
+        int messageSeq
+    )
     {
-        return new() { Type = "SetValue", Data = data };
+        return new()
+        {
+            Type = "SetValue",
+            MessageSeq = messageSeq,
+            Data = data,
+        };
     }
 
-    public static SudokuWebSocketBaseVo<SudokuGamePublicVo> Game(SudokuGamePublicVo data)
+    public static SudokuWebSocketBaseVo<SudokuGamePublicVo> Game(
+        SudokuGamePublicVo data,
+        int messageSeq
+    )
     {
-        return new() { Type = "Game", Data = data };
+        return new()
+        {
+            Type = "Game",
+            MessageSeq = messageSeq,
+            Data = data,
+        };
     }
 }
 

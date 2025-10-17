@@ -54,7 +54,7 @@ public class GamesManager(
             SetCorrectMap = gameManager.SendSolve,
         };
         await gameManager.SendAsJsonAsync(
-            BaseVo.Success(SudokuWebSocketBaseVo.Game(resultGame)),
+            BaseVo.Success(SudokuWebSocketBaseVo.Game(resultGame, gameManager.MessageSeq)),
             JsonSerializerOptions
         );
         return gameManager;
@@ -129,7 +129,7 @@ public class GamesManager(
             setValueResult.Game.SetCorrectMap = true;
         }
         await gameManager.SendAsJsonAsync(
-            BaseVo.Success(SudokuWebSocketBaseVo.SetValue(setValueResult)),
+            BaseVo.Success(SudokuWebSocketBaseVo.SetValue(setValueResult, gameManager.MessageSeq)),
             JsonSerializerOptions
         );
     }
@@ -154,7 +154,7 @@ public class GamesManager(
             SetCorrectMap = gameManager.SendSolve,
         };
         await gameManager.SendAsJsonAsync(
-            BaseVo.Success(SudokuWebSocketBaseVo.Game(game)),
+            BaseVo.Success(SudokuWebSocketBaseVo.Game(game, gameManager.MessageSeq)),
             JsonSerializerOptions
         );
     }
@@ -206,6 +206,10 @@ public class GameManager
     private readonly object _lockAddRemove = new();
 
     public bool SendSolve = false;
+
+    private int _messageSeq = 0;
+
+    public int MessageSeq => _messageSeq++;
 
     /// <summary>
     /// 最大人数
