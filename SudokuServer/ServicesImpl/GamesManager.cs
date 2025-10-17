@@ -49,6 +49,14 @@ public class GamesManager(
             );
             return null;
         }
+        var resultGame = new SudokuGamePublicVo(gameManager.Game)
+        {
+            SetCorrectMap = gameManager.SendSolve,
+        };
+        await gameManager.SendAsJsonAsync(
+            BaseVo.Success(SudokuWebSocketBaseVo.Game(resultGame)),
+            JsonSerializerOptions
+        );
         return gameManager;
     }
 
@@ -141,6 +149,14 @@ public class GamesManager(
             return;
         }
         gameManager.SendSolve = setSendSolveDto.SendSolve;
+        var game = new SudokuGamePublicVo(gameManager.Game)
+        {
+            SetCorrectMap = gameManager.SendSolve,
+        };
+        await gameManager.SendAsJsonAsync(
+            BaseVo.Success(SudokuWebSocketBaseVo.Game(game)),
+            JsonSerializerOptions
+        );
     }
 
     private bool TryJsonDeserialize<T>(JsonElement jsonElement, [NotNullWhen(true)] out T? result)

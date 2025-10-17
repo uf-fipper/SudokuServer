@@ -8,6 +8,11 @@ public class SudokuWebSocketBaseVo
     {
         return new() { Type = "SetValue", Data = data };
     }
+
+    public static SudokuWebSocketBaseVo<SudokuGamePublicVo> Game(SudokuGamePublicVo data)
+    {
+        return new() { Type = "Game", Data = data };
+    }
 }
 
 public class SudokuWebSocketBaseVo<T> : SudokuWebSocketBaseVo
