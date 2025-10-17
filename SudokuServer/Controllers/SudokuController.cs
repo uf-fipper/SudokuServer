@@ -58,6 +58,10 @@ public class SudokuController(SudokuService sudokuService, GamesManager gamesMan
         }
         using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
         var gameManager = await gamesManager.Connect(webSocket, gameId);
+        if (webSocket.State == WebSocketState.Closed)
+        {
+            return;
+        }
         if (gameManager is null)
         {
             await webSocket.CloseAsync(

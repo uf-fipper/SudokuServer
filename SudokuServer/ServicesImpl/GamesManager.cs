@@ -37,7 +37,17 @@ public class GamesManager(
             gameManager = new GameManager { Game = game };
             Games[gameId] = gameManager;
         }
-        gameManager.AddSocket(webSocket);
+        var isAdded = gameManager.AddSocket(webSocket);
+        if (!isAdded)
+        {
+            await webSocket.SendAsJsonAsync(BaseVo.Fail("400", "人数已满"));
+            await webSocket.CloseAsync(
+                WebSocketCloseStatus.NormalClosure,
+                "人数已满",
+                CancellationToken.None
+            );
+            return null;
+        }
         return gameManager;
     }
 
@@ -151,17 +161,36 @@ public class GameManager
 
     public HashSet<WebSocket> WebSockets { get; } = [];
 
+    private readonly object _lockAddRemove = new();
+
+    /// <summary>
+    /// 最大人数
+    /// </summary>
+    public const int MaxPersonCount = 16;
+
+    public int PersonCount = 0;
+
     public string LockKey => $"Lock:WebSocketGameManagerLock:{GameId}";
 
-    public void AddSocket(WebSocket webSocket)
+    public bool AddSocket(WebSocket webSocket)
     {
-        WebSockets.Add(webSocket);
+        lock (_lockAddRemove)
+        {
+            if (PersonCount >= MaxPersonCount)
+                return false;
+            WebSockets.Add(webSocket);
+            return true;
+        }
     }
 
     public void RemoveSocket(WebSocket webSocket)
     {
-        WebSockets.Remove(webSocket);
-        webSocket.Dispose();
+        lock (_lockAddRemove)
+        {
+            WebSockets.Remove(webSocket);
+            PersonCount--;
+            webSocket.Dispose();
+        }
     }
 
     public async Task SendAsync(string text)
