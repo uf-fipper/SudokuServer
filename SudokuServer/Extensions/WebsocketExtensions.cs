@@ -6,10 +6,16 @@ namespace SudokuServer.Extensions;
 
 public static class WebsocketExtensions
 {
-    public static async Task<string> ReceiveAllTextAsync(this WebSocket webSocket)
+    public static async Task<string> ReceiveAllTextAsync(
+        this WebSocket webSocket,
+        int onceLength = 1024 * 4,
+        int? maxLength = null
+    )
     {
-        var buffer = new byte[1024 * 4];
+        maxLength ??= onceLength;
+        var buffer = new byte[onceLength];
         var sb = new StringBuilder();
+        int count = 0;
         WebSocketReceiveResult receiveResult;
         do
         {
@@ -18,15 +24,22 @@ public static class WebsocketExtensions
                 CancellationToken.None
             );
             var text = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
+            count += receiveResult.Count;
+            if (count > maxLength.Value)
+                throw new WebSocketException("消息过长");
             sb.Append(text);
         } while (!receiveResult.EndOfMessage);
         return sb.ToString();
     }
 
-    public static async Task<T> ReceiveAsJsonAsync<T>(this WebSocket webSocket)
+    public static async Task<T> ReceiveAsJsonAsync<T>(
+        this WebSocket webSocket,
+        int onceLength = 1024 * 4,
+        int? maxLength = null
+    )
     {
-        var text = await webSocket.ReceiveAllTextAsync();
-        return System.Text.Json.JsonSerializer.Deserialize<T>(text)!;
+        var text = await webSocket.ReceiveAllTextAsync(onceLength, maxLength);
+        return JsonSerializer.Deserialize<T>(text)!;
     }
 
     public static async Task SendTextAsync(this WebSocket webSocket, string text)
