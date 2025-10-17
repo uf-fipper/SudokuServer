@@ -73,7 +73,14 @@ public class SudokuController(SudokuService sudokuService, GamesManager gamesMan
         }
         while (webSocket.State == WebSocketState.Open)
         {
-            await gamesManager.ReadNextAsync(gameManager, webSocket);
+            try
+            {
+                await gamesManager.ReadNextAsync(gameManager, webSocket);
+            }
+            catch (WebSocketException)
+            {
+                break;
+            }
         }
     }
 
