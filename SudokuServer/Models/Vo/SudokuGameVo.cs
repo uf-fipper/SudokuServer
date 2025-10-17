@@ -11,7 +11,6 @@ public class SudokuGameVo
         Sudoku = sudoku;
         GameId = gameId;
         Seed = seed;
-        BoardEmptyCount = GetBoard().Sum(x => x.Where(y => y == 0).Count());
         StartBoardEmptyCount = sudoku.Size * sudoku.Size - sudoku.BaseIndexs.Count;
     }
 
@@ -33,12 +32,14 @@ public class SudokuGameVo
                 sudoku[i, j] = nowBoard[i][j];
             }
         }
+        _gameModel = game;
         GameId = game.Id;
         Sudoku = sudoku;
         Seed = game.Seed;
-        BoardEmptyCount = GetBoard().Sum(x => x.Where(y => y == 0).Count());
         StartBoardEmptyCount = sudoku.Size * sudoku.Size - sudoku.BaseIndexs.Count;
     }
+
+    private readonly SudokuGame? _gameModel;
 
     public Guid GameId { get; set; }
 
@@ -48,9 +49,32 @@ public class SudokuGameVo
 
     public bool IsWin => Sudoku.IsWin();
 
-    public int BoardEmptyCount { get; set; }
+    public int GetBoardEmptyCount() => GetBoard().Sum(x => x.Where(y => y == 0).Count());
 
     public int StartBoardEmptyCount { get; set; }
+
+    public int[][] GetWinBoard(bool syncSolve = false)
+    {
+        if (_gameModel?.WinBoard != null)
+        {
+            return FromBoardString(_gameModel.WinBoard);
+        }
+        if (!syncSolve)
+        {
+            throw new NotSupportedException("未获取到WinBoard");
+        }
+        var newSudoku = Sudoku.SolveNew() ?? throw new Exception("数独无解");
+        var result = new int[Sudoku.Size][];
+        for (int i = 0; i < Sudoku.Size; i++)
+        {
+            result[i] = new int[Sudoku.Size];
+            for (int j = 0; j < Sudoku.Size; j++)
+            {
+                result[i][j] = newSudoku[i, j];
+            }
+        }
+        return result;
+    }
 
     public SudokuSetValueVo? SetValueStatus { get; set; }
 

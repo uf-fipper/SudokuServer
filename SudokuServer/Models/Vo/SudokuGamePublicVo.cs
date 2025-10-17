@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace SudokuServer.Models.Vo;
@@ -26,9 +27,32 @@ public class SudokuGamePublicVo
 
     public bool IsWin => Game.IsWin;
 
-    public int BoardEmptyCount => Game.BoardEmptyCount;
+    public int BoardEmptyCount => Game.GetBoardEmptyCount();
 
     public int StartBoardEmptyCount => Game.StartBoardEmptyCount;
+
+    public bool[][]? CorrectMap
+    {
+        get
+        {
+            if (!SetCorrectMap)
+                return null;
+            var winBoard = Game.GetWinBoard();
+            var result = new bool[winBoard.Length][];
+            for (int i = 0; i < winBoard.Length; i++)
+            {
+                result[i] = new bool[winBoard.Length];
+                for (int j = 0; j < winBoard.Length; j++)
+                {
+                    result[i][j] = winBoard[i][j] == Game.Sudoku[i, j];
+                }
+            }
+            return result;
+        }
+    }
+
+    [JsonIgnore]
+    public bool SetCorrectMap { get; set; } = false;
 
     [JsonIgnore]
     public SudokuGameVo Game { get; set; }

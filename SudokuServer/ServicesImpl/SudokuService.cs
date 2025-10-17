@@ -60,10 +60,10 @@ public class SudokuService(DatabaseContext db, IDistributedLock distributedLock)
         return gameModel;
     }
 
-    public async Task<SudokuSetValueVo?> SetValueAsync(SudokuSetValueDto dto) =>
-        await SetValueAsync(dto, false);
-
-    public async Task<SudokuSetValueVo?> SetValueAsync(SudokuSetValueDto dto, bool asNoTracking)
+    public async Task<SudokuSetValueVo?> SetValueAsync(
+        SudokuSetValueDto dto,
+        bool asNoTracking = false
+    )
     {
         // 加锁
         await using var lockObj = await LockGameAsync(dto.GameId);

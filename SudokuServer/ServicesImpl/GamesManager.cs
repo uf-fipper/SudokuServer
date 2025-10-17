@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Json;
@@ -72,6 +73,7 @@ public class GamesManager(
         var task = baseDto?.Type switch
         {
             "SetValue" => ReadSetValueAsync(gameManager, webSocket, baseDto.Data),
+            "SetSendSolve" => ReadSetSendSolveAsync(gameManager, webSocket, baseDto.Data),
             _ => webSocket.SendAsJsonAsync(
                 BaseVo.Fail("400", "不支持的操作"),
                 jsonOptions.Value.SerializerOptions
@@ -89,49 +91,73 @@ public class GamesManager(
         JsonElement jsonElement
     )
     {
-        try
-        {
-            var setValueDto = jsonElement.Deserialize<SudokuSetValueDto>(JsonSerializerOptions);
-            if (setValueDto == null)
-            {
-                await webSocket.SendAsJsonAsync(
-                    BaseVo.Fail("400", "请求格式错误"),
-                    JsonSerializerOptions
-                );
-                return;
-            }
-            if (setValueDto.GameId != gameManager.GameId)
-            {
-                await webSocket.SendAsJsonAsync(
-                    BaseVo.Fail("403", "游戏错误"),
-                    JsonSerializerOptions
-                );
-                return;
-            }
-            var setValueResult =
-                await sudokuService.SetValueAsync(setValueDto, true)
-                ?? throw new NotSupportedException("游戏不存在");
-            if (setValueResult.IsLocked)
-            {
-                await webSocket.SendAsJsonAsync(
-                    BaseVo.Fail("400", "网络繁忙，请稍后再试"),
-                    JsonSerializerOptions
-                );
-                return;
-            }
-            gameManager.Game = setValueResult.Game!.Game;
-            await gameManager.SendAsJsonAsync(
-                BaseVo.Success(SudokuWebSocketBaseVo.SetValue(setValueResult)),
-                JsonSerializerOptions
-            );
-        }
-        catch (JsonException)
+        if (!TryJsonDeserialize<SudokuSetValueDto>(jsonElement, out var setValueDto))
         {
             await webSocket.SendAsJsonAsync(
                 BaseVo.Fail("400", "请求格式错误"),
                 JsonSerializerOptions
             );
             return;
+        }
+        if (setValueDto.GameId != gameManager.GameId)
+        {
+            await webSocket.SendAsJsonAsync(BaseVo.Fail("403", "游戏错误"), JsonSerializerOptions);
+            return;
+        }
+        var setValueResult =
+            await sudokuService.SetValueAsync(setValueDto, true)
+            ?? throw new NotSupportedException("游戏不存在");
+        if (setValueResult.IsLocked)
+        {
+            await webSocket.SendAsJsonAsync(
+                BaseVo.Fail("400", "网络繁忙，请稍后再试"),
+                JsonSerializerOptions
+            );
+            return;
+        }
+        gameManager.Game = setValueResult.Game!.Game;
+        if (gameManager.SendSolve)
+        {
+            setValueResult.Game.SetCorrectMap = true;
+        }
+        await gameManager.SendAsJsonAsync(
+            BaseVo.Success(SudokuWebSocketBaseVo.SetValue(setValueResult)),
+            JsonSerializerOptions
+        );
+    }
+
+    private async Task ReadSetSendSolveAsync(
+        GameManager gameManager,
+        WebSocket webSocket,
+        JsonElement jsonElement
+    )
+    {
+        if (!TryJsonDeserialize<SudokuSetSendSolveDto>(jsonElement, out var setSendSolveDto))
+        {
+            await webSocket.SendAsJsonAsync(
+                BaseVo.Fail("400", "请求格式错误"),
+                JsonSerializerOptions
+            );
+            return;
+        }
+        gameManager.SendSolve = setSendSolveDto.SendSolve;
+    }
+
+    private bool TryJsonDeserialize<T>(JsonElement jsonElement, [NotNullWhen(true)] out T? result)
+    {
+        try
+        {
+            result = jsonElement.Deserialize<T>(JsonSerializerOptions);
+            if (result == null)
+            {
+                return false;
+            }
+            return true;
+        }
+        catch (JsonException)
+        {
+            result = default;
+            return false;
         }
     }
 
@@ -162,6 +188,8 @@ public class GameManager
     public HashSet<WebSocket> WebSockets { get; } = [];
 
     private readonly object _lockAddRemove = new();
+
+    public bool SendSolve = false;
 
     /// <summary>
     /// 最大人数
